@@ -16,7 +16,7 @@ function GridSVG() {
     const gridElements = [];
     for (let x = 0; x < gridCols; x++) {
       for (let y = 0; y < gridRows; y++) {
-        const color = getNewXYColor(x,y);
+        const color = getXYColor(x,y);
         const xPos = x * (squareSize + squareSpacing);
         const yPos = y * (squareSize + squareSpacing);
         gridElements.push(
@@ -48,22 +48,55 @@ function GridSVG() {
     return color;
   }
 
+  // hash function from https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript
+  // generates reasonably "random" integers from the given string
+  // useful for seeding our PRNG
+  function cyrb128(str:string):[number, number, number, number] {
+    let h1 = 1779033703, h2 = 3144134277,
+        h3 = 1013904242, h4 = 2773480762;
+    for (let i = 0, k; i < str.length; i++) {
+        k = str.charCodeAt(i);
+        h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
+        h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
+        h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
+        h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
+    }
+    h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
+    h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
+    h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
+    h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
+    h1 ^= (h2 ^ h3 ^ h4), h2 ^= h1, h3 ^= h1, h4 ^= h1;
+    return [h1>>>0, h2>>>0, h3>>>0, h4>>>0];
+}
+
+// also from https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript
+// generates a PRNG function from the given seed
+// could be a bit more random-y and longer period, see reference above if needed
+function mulberry32(a:number):()=>number {
+    return function() {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    }
+}
+
   // Function to generate "mixed deterministic" not-really-random colors
   function getXYColor(x:number, y:number) {
-    // spread the (gridRows*gridCols) boxes across the (256^3)-color spectrum
-    const letters = "0123456789ABCDEF";
-    // convert box to a number
-    const boxNum = x*gridCols + y;
-    const numColors = 256*256*256;
-    // convert boxNum to a color number, "random" across the 24-bit color spectrum
-    const biggishPrime = 1495553872933; // from https://bigprimes.org/
-    const bigColorNum = boxNum * biggishPrime;
-    const colorNumber = bigColorNum % numColors;
-    let value = colorNumber & 0xFFFFFF;
+    const rands = cyrb128(x.toString() + "_" + y.toString());
+    let value = rands[0] & 0xFFFFFF;
     // Convert the integer to a hex string and pad with zeros if necessary
     const hexString: string = '#' + value.toString(16).padStart(6, '0');
     return hexString;
   }
+
+  // seed PRNG so we'll get the same "random" colors every time
+  var seed = cyrb128("apples");
+  var rand = mulberry32(seed[0]);
+  console.log("rand sample: " + rand());
+  console.log("rand sample: " + rand());
+  console.log("rand sample: " + rand());
+  // NOTE: we don't actually use rand() yet, we're using our hash cyrb128() function instead
 
   // hashString and randomIntWithinRange are from ChatGPT and look kinda goofy, probably better to take soemthing from:
   //     https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript
