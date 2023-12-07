@@ -38,16 +38,6 @@ function GridSVG() {
     return gridElements;
   };
 
-  // Function to generate random colors
-  function getRandomColor() {
-    const letters = "0123456789ABCDEF";
-    let color = "#";
-    for (let i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
-  }
-
   // hash function from https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript
   // generates reasonably "random" integers from the given string
   // useful for seeding our PRNG
@@ -97,44 +87,6 @@ function mulberry32(a:number):()=>number {
   console.log("rand sample: " + rand());
   console.log("rand sample: " + rand());
   // NOTE: we don't actually use rand() yet, we're using our hash cyrb128() function instead
-
-  // hashString and randomIntWithinRange are from ChatGPT and look kinda goofy, probably better to take soemthing from:
-  //     https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript
-  function hashString(str) {
-    let hash = 0;
-  
-    if (str.length === 0) return hash;
-  
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash = hash & hash; // Convert to 32bit integer
-    }
-  
-    return hash;
-  }
-  
-  function randomIntWithinRange(seed:number, min:number, max:number) {
-    const hashedSeed = hashString(String(seed));
-    const normalizedSeed = (hashedSeed % 1000) / 1000; // Normalize to [0, 1)
-    const range = max - min + 1;
-  
-    return Math.floor(normalizedSeed * range) + min;
-  }  
-
-  // Function to generate "mixed deterministic" not-really-random colors
-  // replace the above with something that uses a reasonable hash function
-  function getNewXYColor(x:number, y:number) {
-    const firstTwelveBits = randomIntWithinRange(x, 0, 4095);
-    const secondTwelveBits = randomIntWithinRange(y, 0, 4095);
-    const colorNumber = (firstTwelveBits << 12) + secondTwelveBits;
-    let value = colorNumber & 0xFFFFFF;
-    // Convert the integer to a hex string and pad with zeros if necessary
-    const hexString: string = '#' + value.toString(16).padStart(6, '0');
-    console.log(`x=${x}, y=${y}, firstTwelveBits=${firstTwelveBits}, secondTwelveBits=${secondTwelveBits}, colorNumber=${colorNumber}, hexString=${hexString}`)
-    return hexString;
-  }
-
 
   const [viewBoxX, setViewBoxX] = useState(0);
   const [viewBoxY, setViewBoxY] = useState(0);
