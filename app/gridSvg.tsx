@@ -2,42 +2,6 @@
 import React,  { useState } from "react";
 import internal from "stream";
 
-function GridSVG() {
-  const gridCols = 100;
-  const gridRows = 100;
-  const svgWidth = 300;
-  const svgHeight = 300;
-  const squareSize = 12;
-  const squareSpacing = 3;
-  const borderRounding = 1;
-
-  // Function to generate the grid of squares with random colors and borders
-  const renderGrid = () => {
-    const gridElements = [];
-    for (let x = 0; x < gridCols; x++) {
-      for (let y = 0; y < gridRows; y++) {
-        const color = getXYColor(x,y);
-        const xPos = x * (squareSize + squareSpacing);
-        const yPos = y * (squareSize + squareSpacing);
-        gridElements.push(
-          <rect
-            key={x * gridCols + y}
-            x={xPos.toString()}
-            y={yPos.toString()}
-            width={squareSize}
-            height={squareSize}
-            fill={color}
-            stroke="gray"
-            strokeWidth="0.1"
-            rx={borderRounding}
-            ry={borderRounding}
-          />
-        );
-      }
-    }
-    return gridElements;
-  };
-
   // hash function from https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript
   // generates reasonably "random" integers from the given string
   // useful for seeding our PRNG
@@ -88,6 +52,96 @@ function mulberry32(a:number):()=>number {
   console.log("rand sample: " + rand());
   // NOTE: we don't actually use rand() yet, we're using our hash cyrb128() function instead
 
+
+interface MapCellProps {xPos: number, yPos: number}
+
+const MapCellComponent: React.FC<MapCellProps> = ({ xPos, yPos }) => {
+  const color = getXYColor(xPos, yPos);
+  return (
+    <svg width="100" height="100" viewBox="0 0 100 100">
+      <rect
+        key={xPos.toString() + '-' + yPos.toString()}
+        width={22}
+        height={22}
+        fill={color}
+        stroke="gray"
+        strokeWidth="0.1"
+        rx={2}
+        ry={2}
+      />
+    </svg>
+  );
+};
+
+const MyComponent: React.FC = () => {
+  const [clickCount, setClickCount] = useState(0);
+  const [x, setX] = useState(0);
+  const [y, setY] = useState(0);
+
+  const handleButtonClick = () => {
+    setClickCount((prev) => prev + 1);
+  };
+  const handleXButtonClick = () => {
+    setX((x) => x + 1);
+  };
+  const handleYButtonClick = () => {
+    setY((y) => y + 1);
+  };
+
+  return (
+    <div>
+      <button onClick={handleXButtonClick} className="border border-white rounded p-2 mt-2 text-white">
+        Increase X
+      </button>
+      <button onClick={handleYButtonClick} className="border border-white rounded p-2 mt-2 text-white">
+        Increase Y
+      </button>
+
+      {/* Render the SVGComponent with the current clickCount */}
+      <MapCellComponent xPos ={x} yPos = {y} />
+    </div>
+  );
+};
+
+
+
+function GridSVG() {
+  const gridCols = 100;
+  const gridRows = 100;
+  const svgWidth = 300;
+  const svgHeight = 300;
+  const squareSize = 12;
+  const squareSpacing = 3;
+  const borderRounding = 1;
+
+  // Function to generate the grid of squares with random colors and borders
+  const renderGrid = () => {
+    const gridElements = [];
+    for (let x = 0; x < gridCols; x++) {
+      for (let y = 0; y < gridRows; y++) {
+        const color = getXYColor(x,y);
+        const xPos = x * (squareSize + squareSpacing);
+        const yPos = y * (squareSize + squareSpacing);
+        gridElements.push(
+          <rect
+            key={x * gridCols + y}
+            x={xPos.toString()}
+            y={yPos.toString()}
+            width={squareSize}
+            height={squareSize}
+            fill={color}
+            stroke="gray"
+            strokeWidth="0.1"
+            rx={borderRounding}
+            ry={borderRounding}
+          />
+        );
+      }
+    }
+    return gridElements;
+  };
+
+
   const [viewBoxX, setViewBoxX] = useState(0);
   const [viewBoxY, setViewBoxY] = useState(0);
   const [viewBoxWidth, setViewBoxWidth] = useState(100);
@@ -125,6 +179,7 @@ function mulberry32(a:number):()=>number {
 
   return (
     <div>
+      <MyComponent />
       <svg
         id="grid"
         width={svgWidth}
