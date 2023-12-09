@@ -44,6 +44,43 @@ function mulberry32(a:number):()=>number {
     return hexString;
   }
 
+  function getBlobbyXYColor(x:number, y:number) {
+    // get nearest x and y that are multiples of 10
+    const nearbyX = Math.floor(x / 10) * 10;
+    const nearbyY = Math.floor(y / 10) * 10;
+    const rands = cyrb128(x.toString() + "_" + y.toString());
+    const nearRands = cyrb128(nearbyX.toString() + "_" + nearbyY.toString());
+    // average the two random numbers
+    //  const rand = (rands[0] + nearRands[0]) / 2;
+
+    // take the cell itself
+    // const r = Math.floor(rands[0] & 0xFF);
+    // const g = Math.floor(rands[1] & 0xFF);
+    // const b = Math.floor(rands[2] & 0xFF);
+
+    // take the nearest cell that is multiple of 10
+    // const r = Math.floor(nearRands[0] & 0xFF);
+    // const g = Math.floor(nearRands[1] & 0xFF);
+    // const b = Math.floor(nearRands[2] & 0xFF);
+
+    // average cell and nearest cell that is multiple of 10 r, g, b separately
+    const r = Math.floor((rands[0] & 0xFF + nearRands[0] & 0xFF) / 2);
+    const g = Math.floor((rands[1] & 0xFF + nearRands[1] & 0xFF) / 2);
+    const b = Math.floor((rands[2] & 0xFF + nearRands[2] & 0xFF) / 2);
+
+
+    // create color string from r,g,b
+    // console.log("r: " + r.toString(16).padStart(2, '0') + " g: " + g.toString(16).padStart(2, '0') + " b: " + b.toString(16).padStart(2, '0'));
+    const colorString = '#' + r.toString(16).padStart(2, '0') + g.toString(16).padStart(2, '0') + b.toString(16).padStart(2, '0');
+    // console.log("colorString: " + colorString);
+    return colorString;
+    // const rand = nearRands[0];
+    // let value = rand & 0xFFFFFF;
+    // // Convert the integer to a hex string and pad with zeros if necessary
+    // const hexString: string = '#' + value.toString(16).padStart(6, '0');
+    // return hexString;
+  }
+
   // seed PRNG so we'll get the same "random" colors every time
   var seed = cyrb128("apples");
   var rand = mulberry32(seed[0]);
@@ -56,7 +93,7 @@ function mulberry32(a:number):()=>number {
 interface MapCellProps {xPos: number, yPos: number}
 
 const MapCellComponent: React.FC<MapCellProps> = ({ xPos, yPos }) => {
-  const color = getXYColor(xPos, yPos);
+  const color = getBlobbyXYColor(xPos, yPos);
   return (
     <svg width="100" height="100" viewBox="0 0 100 100">
       <rect
@@ -119,7 +156,7 @@ function GridSVG() {
     const gridElements = [];
     for (let x = 0; x < gridCols; x++) {
       for (let y = 0; y < gridRows; y++) {
-        const color = getXYColor(x,y);
+        const color = getBlobbyXYColor(x,y);
         const xPos = x * (squareSize + squareSpacing);
         const yPos = y * (squareSize + squareSpacing);
         gridElements.push(
