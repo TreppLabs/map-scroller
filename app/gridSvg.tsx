@@ -84,15 +84,69 @@ function mulberry32(a:number):()=>number {
   // seed PRNG so we'll get the same "random" colors every time
   var seed = cyrb128("apples");
   var rand = mulberry32(seed[0]);
-  console.log("rand sample: " + rand());
-  console.log("rand sample: " + rand());
-  console.log("rand sample: " + rand());
+  var randIntegerInRange = (min:number, max:number) => Math.floor(rand() * (max - min + 1)) + min;
+  // console.log("rand sample: " + rand());
+  // console.log("rand sample: " + rand());
+  // console.log("rand sample: " + rand());
   // NOTE: we don't actually use rand() yet, we're using our hash cyrb128() function instead
 
 
-interface MapCellProps {xPos: number, yPos: number}
+interface FlagComponentProps {
+  flagSize: number;
+}
 
-const MapCellComponent: React.FC<MapCellProps> = ({ xPos, yPos }) => {
+const FlagComponent: React.FC<FlagComponentProps> = ({ flagSize }) => {
+
+  const flags = Array.from({ length: 10 }, (_, rowIndex) =>
+      Array.from({ length: 10 }, (_, colIndex) => {
+        const randomOrientation = Math.floor(Math.random() * 4);
+        if (randomOrientation === 0) {
+          return (
+            `<svg width=${flagSize} height=${flagSize} xmlns="http://www.w3.org/2000/svg">
+              <polygon points="0,0 ${flagSize},0 0,${flagSize}" fill="white" />
+              <polygon points="${flagSize},0 ${flagSize},${flagSize} 0,${flagSize}" fill="gray" />
+            </svg>`
+          );
+        } else if (randomOrientation === 1) {
+          return (
+            `<svg width=${flagSize} height=${flagSize} xmlns="http://www.w3.org/2000/svg">
+              <polygon points="0,0 ${flagSize},${flagSize} 0,${flagSize}" fill="white" />
+              <polygon points="0,0 ${flagSize},0 ${flagSize},${flagSize}" fill="grey" />
+            </svg>`
+          );
+        } else if (randomOrientation === 2) {
+          return (
+            `<svg width=${flagSize} height=${flagSize} xmlns="http://www.w3.org/2000/svg">
+              <polygon points="0,0 ${flagSize},0 0,${flagSize}" fill="gray" />
+              <polygon points="${flagSize},0 ${flagSize},${flagSize} 0,${flagSize}" fill="white" />
+            </svg>`
+          );
+        } else {
+          return (
+            `<svg width=${flagSize} height=${flagSize} xmlns="http://www.w3.org/2000/svg">
+              <polygon points="0,0 ${flagSize},${flagSize} 0,${flagSize}" fill="grey" />
+              <polygon points="0,0 ${flagSize},0 ${flagSize},${flagSize}" fill="white" />
+            </svg>`
+          );
+        }
+      })
+  );
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: `repeat(10, ${flagSize}px)`, gap: '2px' }}>
+      {flags.map((row, rowIndex) =>
+        row.map((svgString, colIndex) => (
+          <div key={`${rowIndex}-${colIndex}`} dangerouslySetInnerHTML={{ __html: svgString }} />
+        ))
+      )}
+    </div>
+  );
+};
+
+
+interface MapCellProps {xPos: number, yPos: number, xCells: number, yCells: number}
+
+const RegionalMap: React.FC<MapCellProps> = ({ xPos, yPos, xCells, yCells }) => {
   const color = getBlobbyXYColor(xPos, yPos);
   return (
     <svg width="100" height="100" viewBox="0 0 100 100">
@@ -135,7 +189,7 @@ const MyComponent: React.FC = () => {
       </button>
 
       {/* Render the SVGComponent with the current clickCount */}
-      <MapCellComponent xPos ={x} yPos = {y} />
+      <RegionalMap xPos ={x} yPos = {y} xCells = {10} yCells = {10}/>
     </div>
   );
 };
@@ -213,10 +267,12 @@ function GridSVG() {
     testBoundaries();   
   }
 
+  
 
   return (
     <div>
       <MyComponent />
+      <FlagComponent flagSize={30}/>
       <svg
         id="grid"
         width={svgWidth}
