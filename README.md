@@ -1,3 +1,7 @@
+Explorations of drawing a (generated) SVG map with panning, zooming.
+Leaving this on the shelf as-is.
+Going to fork it into "hilbertish"
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
