@@ -97,6 +97,7 @@ interface MapCellProps {xPos: number, yPos: number, xCells: number, yCells: numb
 
 const RegionalMap: React.FC<MapCellProps> = ({ xPos, yPos, xCells, yCells }) => {
   const color = getBlobbyXYColor(xPos, yPos);
+  console.log(`xce: ${xCells} yce: ${yCells} x: ${xPos} y: ${yPos} color: ${color}`)
   return (
     <svg width="100" height="100" viewBox="0 0 100 100">
       <rect
@@ -138,7 +139,7 @@ const MyComponent: React.FC = () => {
       </button>
 
       {/* Render the SVGComponent with the current clickCount */}
-      <RegionalMap xPos ={x} yPos = {y} xCells = {10} yCells = {10}/>
+      <RegionalMap xPos ={x} yPos = {y} xCells = {5} yCells = {5}/>
     </div>
   );
 };
